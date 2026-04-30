@@ -29,9 +29,6 @@ const sendContactMail = async (req, res) => {
       user,
       pass,
     },
-    connectionTimeout: 10000,  // ✅ ADD
-    greetingTimeout: 10000,    // ✅ ADD
-    socketTimeout: 15000,      // ✅ ADD
   });
 
   const mailOptions = {
