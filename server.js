@@ -10,10 +10,7 @@ const app = express();
 app.use(express.json());
 // server.js mein
 app.use(
-  cors({
-    origin: "https://bakery-website-frontend-flame.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+  cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000"
   }),
 );
 // Routes
