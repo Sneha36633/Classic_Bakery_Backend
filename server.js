@@ -7,14 +7,21 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// ✅ CORS FIRST
+const corsOptions = {
+  origin: "https://bakery-website-frontend-flame.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+// ✅ Body parser
 app.use(express.json());
 
-app.use(cors({
-  origin: "https://bakery-website-frontend-flame.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-// Routes
+// ✅ Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));
