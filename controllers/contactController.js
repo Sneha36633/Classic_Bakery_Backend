@@ -43,7 +43,7 @@ const sendContactMail = async (req, res) => {
   console.log('Contact form request received:', { name, email, message, to });
 
   try {
-    await transporter.verify();
+    // await transporter.verify();
     const info = await transporter.sendMail(mailOptions);
     console.log('Contact email sent:', info.response || info.messageId);
     res.status(200).json({ message: 'Message sent successfully.' });
