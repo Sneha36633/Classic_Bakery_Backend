@@ -8,11 +8,12 @@ connectDB();
 
 const app = express();
 app.use(express.json());
-// server.js mein
-app.use(
-  cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000"
-  }),
-);
+
+app.use(cors({
+  origin: "https://bakery-website-frontend-flame.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
