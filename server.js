@@ -8,7 +8,10 @@ connectDB();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+// server.js mein
+app.use(cors({
+  origin: "https://your-frontend-link.vercel.app" // Apne Vercel frontend ka link yahan dalein
+}));
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
