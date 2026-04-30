@@ -11,7 +11,7 @@ app.use(express.json());
 // server.js mein
 app.use(
   cors({
-    origin: "https://your-frontend-link.vercel.app",
+    origin: "https://bakery-website-frontend-flame.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
