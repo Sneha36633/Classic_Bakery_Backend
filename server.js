@@ -9,25 +9,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 // server.js mein
-const allowedOrigins = [
-  'https://bakery-website-frontend-flame.vercel.app',
-  'https://bakery-website-frontend-h8hr.vercel.app',
-  'http://localhost:3000' // Local testing ke liye
-];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS block kar raha hai: Is URL ko permission nahi hai.'));
-    }
-  },
-  credentials: true // Agar aap cookies ya sessions use kar rahe ho
-}));
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
