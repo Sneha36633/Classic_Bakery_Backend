@@ -7,8 +7,18 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// ✅ CORS add karo - routes se PEHLE
+app.use(cors({
+  origin: [
+    'https://bakery-website-frontend-flame.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
-// server.js mein
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
