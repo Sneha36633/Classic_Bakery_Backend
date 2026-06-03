@@ -1,56 +1,75 @@
-const nodemailer = require('nodemailer');
+const emailjs = require('@emailjs/nodejs');
+
+const serviceID = process.env.EMAILJS_SERVICE_ID;
+const templateID = process.env.EMAILJS_TEMPLATE_ID;
+const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+const toEmail = process.env.CONTACT_TO_EMAIL || 'snehagade76@gmail.com';
+
+// ✅ Log env vars at startup (masks sensitive values)
+console.log('EmailJS Config Check:', {
+  serviceID: serviceID ? `✅ ${serviceID}` : '❌ MISSING',
+  templateID: templateID ? `✅ ${templateID}` : '❌ MISSING',
+  publicKey: publicKey ? '✅ SET' : '❌ MISSING',
+  privateKey: privateKey ? '✅ SET' : '❌ MISSING',
+  toEmail,
+});
+
+if (publicKey && privateKey) {
+  emailjs.init({ publicKey, privateKey });
+} else {
+  console.error('❌ EmailJS not initialized — missing keys');
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const sendContactMail = async (req, res) => {
+  console.log('--- /api/contact hit ---');
+  console.log('Body:', req.body);
+
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
+    console.log('❌ Validation failed: missing fields');
     return res.status(400).json({ message: 'Name, email, and message are required.' });
   }
 
-  const host = process.env.EMAIL_HOST;
-  const port = Number(process.env.EMAIL_PORT) || 587;
-  const secure = process.env.EMAIL_SECURE === 'true';
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-  const to = process.env.EMAIL_TO || user;
-
-  if (!host || !user || !pass || !to) {
-    return res.status(500).json({
-      message:
-        'Email server is not configured. Please set EMAIL_HOST, EMAIL_USER, EMAIL_PASS, and EMAIL_TO in .env.',
-    });
+  if (!EMAIL_REGEX.test(email)) {
+    console.log('❌ Validation failed: bad email format');
+    return res.status(400).json({ message: 'Please provide a valid email address.' });
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: {
-      user,
-      pass,
-    },
-  });
+  if (!serviceID || !templateID || !publicKey || !privateKey) {
+    console.log('❌ Missing env variables');
+    return res.status(500).json({ message: 'Email service is not configured.' });
+  }
 
-  const mailOptions = {
-    from: `"Classic Bakery" <${user}>`,
-    replyTo: `${name} <${email}>`,
-    to,
+  const templateParams = {
+    to_email: toEmail,
+    from_name: name,
+    from_email: email,
     subject: `Classic Bakery contact message from ${name}`,
-    text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
-    html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong><br/>${message.replace(/\n/g, '<br/>')}</p>`,
+    message,
   };
 
-  console.log('Contact form request received:', { name, email, message, to });
-
   try {
-    await transporter.verify();
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Contact email sent:', info.response || info.messageId);
-    res.status(200).json({ message: 'Message sent successfully.' });
+    console.log('📤 Sending email via EmailJS...');
+    const response = await emailjs.send(serviceID, templateID, templateParams);
+    console.log('✅ Email sent:', response.status, response.text);
+    return res.status(200).json({ message: 'Message sent successfully.' });
   } catch (err) {
-    console.error('Contact email error:', err);
-    const errorMessage = err.response?.body || err.message || 'Unable to send message. Please try again later.';
-    res.status(500).json({ message: `Unable to send message. ${errorMessage}` });
+    // ✅ Log the full error object
+    console.error('❌ EmailJS send failed:');
+    console.error('  Status:', err?.status);
+    console.error('  Text:', err?.text);
+    console.error('  Message:', err?.message);
+    console.error('  Full error:', JSON.stringify(err, null, 2));
+
+    return res.status(500).json({
+      message: 'Failed to send message. Please try again later.',
+      // ✅ Expose error detail in dev only
+      ...(process.env.NODE_ENV !== 'production' && { debug: err?.text || err?.message }),
+    });
   }
 };
 
